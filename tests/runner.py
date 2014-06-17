@@ -38,6 +38,15 @@ class Run(Spec):
         self.err = "./err bar"
         self.sub = "inv -c pty_output hide_%s"
 
+    class command_expansion:
+        def simple_expansion(self):
+            r = run("echo {var1}", expand={"var1":"hello"})
+            eq_(r.stdout.strip(), "hello")
+
+        def no_expansion(self):
+            r = run("echo ${{PWD}}")
+            eq_(r.stdout.strip(), os.getcwd())
+
     class return_value:
         def return_code_in_result(self):
             """

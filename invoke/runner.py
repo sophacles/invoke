@@ -92,9 +92,19 @@ class Local(Runner):
         return "".join(out), "", p.exitstatus, exception
 
 
-def run(command, warn=False, hide=None, pty=False, echo=False, runner=Local):
+def run(command, warn=False, hide=None, pty=False, echo=False, runner=Local, expand=None):
     """
     Execute ``command`` (via ``runner``) returning a `Result` object.
+
+    ``command`` must be a standard python format string. This will be
+    formatted with the variables provided in the ``expand`` keyword, before
+    being passed to the ``Runner`` instance.
+
+    .. note::
+        Due to the use of format strings, any time a curly brace ``{`` or ``}``
+        is used, it must be escaped per python format string rules... ``{{``
+        and ``}}`` expand to literal ``{`` and ``}`` respectively. This can be
+        important when using environment variables in the shell.
 
     A `Failure` exception (containing a reference to the `Result` that would
     otherwise have been returned) is raised if the command terminates with a
@@ -129,11 +139,17 @@ def run(command, warn=False, hide=None, pty=False, echo=False, runner=Local):
     and must be a class exposing two methods, ``run`` and ``run_pty``, whose
     signatures must match ``function(command, warn, hide)`` - all of which
     match the above descriptions, re: types and default values.
-    
+
     These methods must return a tuple of ``(stdout, stderr, exited,
     exception)``, where ``stdout`` and ``stderr`` are strings, ``exited`` is
     an integer, and ``exception`` is an exception object or ``None``.
     """
+
+    # expand command-line
+    if expand is None:
+        expand = {}
+    command = command.format(**expand)
+
     hide = normalize_hide(hide)
     exception = False
     if echo:

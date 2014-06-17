@@ -59,6 +59,11 @@ class Context(object):
         """
         Wrapper for `.run`.
 
+        The context will be used as default values for `.run`'s format strings,
+        any additional variables, or overrides to the context, can be set
+        by setting the ``expand`` argument. Overrides are for this call to
+        `.run` only.
+
         To set default `.run` keyword argument values, instantiate `.Context`
         with the ``run`` kwarg set to a dict.
 
@@ -71,6 +76,14 @@ class Context(object):
         """
         options = dict(self.config['run'])
         options.update(kwargs)
+
+        # command line expansion
+        final_expand_args = {}
+        final_expand_args.update(self.config['general'])
+        explicit_expand = kwargs.get("expand", {})
+        final_expand_args.update(explicit_expand)
+        options['expand'] = final_expand_args
+
         return run(*args, **options)
 
     def __getitem__(self, *args, **kwargs):

@@ -17,7 +17,7 @@ class Context_(Spec):
         def _honors(self, kwarg, value):
             with patch('invoke.context.run') as run:
                 Context(run={kwarg: value}).run('x')
-                run.assert_called_with('x', **{kwarg: value})
+                run.assert_called_with('x', **{kwarg: value, 'expand':{}})
 
         def warn(self):
             self._honors('warn', True)
@@ -30,6 +30,21 @@ class Context_(Spec):
 
         def echo(self):
             self._honors('echo', True)
+
+        def ctx_expansion(self):
+            ctx = Context(config={"foo":"bar"})
+            res = ctx.run("echo {foo}")
+            eq_(res.stdout.strip(), "bar")
+
+        def ctx_expansion_and_vars(self):
+            ctx = Context(config={"foo":"bar"})
+            res = ctx.run("echo {foo} {something}", expand={"something":"baz"})
+            eq_(res.stdout.strip(), "bar baz")
+
+        def ctx_expansion_override(self):
+            ctx = Context(config={"foo":"bar"})
+            res = ctx.run("echo {foo}", expand={"foo":"baz"})
+            eq_(res.stdout.strip(), "baz")
 
     class clone:
         def returns_copy_of_self(self):

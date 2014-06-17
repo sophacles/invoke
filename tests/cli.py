@@ -240,7 +240,7 @@ Available tasks:
         def _test_flag(self, flag, kwarg, value):
             with patch('invoke.context.run') as run:
                 _dispatch('invoke {0} -c contextualized run'.format(flag))
-                run.assert_called_with('x', **{kwarg: value})
+                run.assert_called_with('x', **{kwarg: value, 'expand':{}})
 
         def warn_only(self):
             self._test_flag('-w', 'warn', True)
